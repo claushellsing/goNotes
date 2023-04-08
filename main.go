@@ -1,10 +1,11 @@
 package main
 
 import (
-	"fmt"
+	"github.com/pterm/pterm"
 	"github.com/spf13/cobra"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"strconv"
 )
 
 type Subject struct {
@@ -67,11 +68,17 @@ func main() {
 		Short: "List all notes",
 		Run: func(cmd *cobra.Command, args []string) {
 			var notes []Note
+			var dtTable pterm.TableData
 			db.Find(&notes)
 
+			dtTable = append(dtTable, []string{"ID", "Note"})
 			for _, note := range notes {
-				fmt.Printf("%v\n", note)
+				dtTable = append(dtTable, []string{
+					strconv.Itoa(int(note.ID)), note.Text,
+				})
 			}
+
+			pterm.DefaultTable.WithHasHeader().WithBoxed().WithData(dtTable).Render()
 		},
 	}
 
