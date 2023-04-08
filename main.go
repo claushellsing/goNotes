@@ -1,10 +1,9 @@
 package main
 
 import (
-	"fmt"
+	"github.com/spf13/cobra"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	"os"
 )
 
 type Subject struct {
@@ -19,18 +18,16 @@ type Note struct {
 	Subject   Subject
 }
 
-func main() {
+var defaultSubjectID = uint(1) //first subject
+
+var rootCmd = &cobra.Command{
+	Use: "note",
+}
+
+func initDB() (*gorm.DB, error) {
 	var count int
-	defaultSubjectID := uint(1) //first subject
 
-	if len(os.Args) < 2 {
-		fmt.Println("Need a message")
-		return
-	}
-
-	noteText := os.Args[1]
-
-	db, _ := gorm.Open(sqlite.Open("notes.db"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open("notes.db"), &gorm.Config{})
 	db.
 		Raw("SELECT count(*) FROM sqlite_master where type='table'").
 		Scan(&count)
@@ -43,10 +40,28 @@ func main() {
 		})
 	}
 
-	note := Note{
-		Text:      noteText,
-		SubjectID: defaultSubjectID,
+	return db, err
+}
+
+func main() {
+
+	db, _ := initDB()
+
+	cmdAddNote := &cobra.Command{
+		Use:   "add [note]",
+		Short: "Add a new note",
+		Run: func(cmd *cobra.Command, args []string) {
+			noteText := args[0]
+			note := Note{
+				Text:      noteText,
+				SubjectID: defaultSubjectID,
+			}
+
+			db.Create(&note)
+		},
 	}
 
-	db.Create(&note)
+	rootCmd := &cobra.Command{Use: "app"}
+	rootCmd.AddCommand(cmdAddNote)
+	rootCmd.Execute()
 }
