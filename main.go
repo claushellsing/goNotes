@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/spf13/cobra"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -61,7 +62,21 @@ func main() {
 		},
 	}
 
+	cmdListNotes := &cobra.Command{
+		Use:   "list",
+		Short: "List all notes",
+		Run: func(cmd *cobra.Command, args []string) {
+			var notes []Note
+			db.Find(&notes)
+
+			for _, note := range notes {
+				fmt.Printf("%v\n", note)
+			}
+		},
+	}
+
 	rootCmd := &cobra.Command{Use: "app"}
 	rootCmd.AddCommand(cmdAddNote)
+	rootCmd.AddCommand(cmdListNotes)
 	rootCmd.Execute()
 }
