@@ -50,13 +50,39 @@ func main() {
 	db, _ := initDB()
 
 	cmdAddNote := &cobra.Command{
-		Use:   "add [note]",
+		Use:   "add [note] [subject]",
 		Short: "Add a new note",
 		Run: func(cmd *cobra.Command, args []string) {
 			noteText := args[0]
-			note := Note{
-				Text:      noteText,
-				SubjectID: defaultSubjectID,
+			var note = Note{}
+
+			if len(args) > 1 {
+				var subjectId uint
+				subjectName := args[1]
+				subject := Subject{}
+
+				db.Find(&subject, "name = ?", subjectName)
+
+				if subject.ID == 0 { //No subject found
+					newSubject := Subject{
+						Name: subjectName,
+					}
+					db.Create(&newSubject)
+
+					subjectId = newSubject.ID
+				} else {
+					subjectId = subject.ID
+				}
+
+				note = Note{
+					Text:      noteText,
+					SubjectID: subjectId,
+				}
+			} else {
+				note = Note{
+					Text:      noteText,
+					SubjectID: defaultSubjectID,
+				}
 			}
 
 			db.Create(&note)
