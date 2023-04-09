@@ -69,12 +69,14 @@ func main() {
 		Run: func(cmd *cobra.Command, args []string) {
 			var notes []Note
 			var dtTable pterm.TableData
-			db.Find(&notes)
+			db.Preload("Subject").Find(&notes)
 
-			dtTable = append(dtTable, []string{"ID", "Note"})
+			dtTable = append(dtTable, []string{"ID", "Note", "Subject"})
 			for _, note := range notes {
 				dtTable = append(dtTable, []string{
-					strconv.Itoa(int(note.ID)), note.Text,
+					strconv.Itoa(int(note.ID)),
+					note.Text,
+					note.Subject.Name,
 				})
 			}
 
