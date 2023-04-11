@@ -90,12 +90,19 @@ func main() {
 	}
 
 	cmdListNotes := &cobra.Command{
-		Use:   "list",
+		Use:   "list [subject]",
 		Short: "List all notes",
 		Run: func(cmd *cobra.Command, args []string) {
 			var notes []Note
 			var dtTable pterm.TableData
-			db.Preload("Subject").Find(&notes)
+
+			db := db.Joins("Subject")
+			if len(args) > 0 {
+				subjectText := args[0]
+				db.Where("Subject.Name = ?", subjectText).Find(&notes)
+			}
+
+			db.Find(&notes)
 
 			dtTable = append(dtTable, []string{"ID", "Note", "Subject"})
 			for _, note := range notes {
