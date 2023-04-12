@@ -40,7 +40,7 @@ changelog:
       - '^test:'
       -
 brews:
-  - name: goNotes
+  - name: gnote
     homepage: https://github.com/claushellsing/homebrew-goNotes
     tap:
       owner: claushellsing
